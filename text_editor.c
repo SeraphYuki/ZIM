@@ -4018,7 +4018,8 @@ void Thoth_Editor_Event(Thoth_Editor *t, unsigned int key){
 			if (t->ttyPid == 0) {
 				chdir(t->fileBrowser.directory);
 				char *args[] = {t->cfg->makecmd,NULL};
-				execvp(args[0], args);
+				char *args2[] = {NULL};
+				execvp(args[0], args2);
 			}
 
 			StartLogging(t, THOTH_LOGMODE_CONSOLE);
