@@ -3316,7 +3316,7 @@ void Thoth_Editor_Draw(Thoth_Editor *t){
 	if(t->logging && t->logging != THOTH_LOGMODE_CONSOLE){
 
 		Thoth_Graphics_attron(t->graphics,THOTH_COLOR_FIND);
-		char buffer[] = "ERR\0";
+		char buffer[128] = "ERR\0";
 		if(t->logging == THOTH_LOGMODE_NUM){ sprintf(buffer, "g: "); }        
 		else if(t->logging == THOTH_LOGMODE_TEXT){ sprintf(buffer, "F: "); }        
 		else if(t->logging == THOTH_LOGMODE_TEXT_INSENSITIVE){ sprintf(buffer, "f: "); }        
@@ -3525,11 +3525,11 @@ void Thoth_Editor_Draw(Thoth_Editor *t){
 						}
 					}
 
+					k--;
 				}
 
 
 				last = k;
-				k--;
 				continue;
 			}
 
