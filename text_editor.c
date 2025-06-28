@@ -29,7 +29,6 @@ enum {
   SCR_NORM = 0,
   SCR_CENT,
 };
-static FILE *logfile = NULL;
 
 static void PutsCursor(Thoth_EditorCur c);
 static void LoggingMoveLines(Thoth_Editor *t, int num);
@@ -537,9 +536,9 @@ static void ResolveCursorCollisions(Thoth_Editor *t, int *cursorIndex){
 								t->cursors[j].savedText[len1+len2] = 0;
 
 								memcpy(&t->cursors[j].savedText[len1], t->cursors[f].savedText, len2);
+								free(t->cursors[f].savedText);
 							}
 							
-							free(t->cursors[f].savedText);
 
 							t->cursors[f].savedText = t->cursors[j].savedText;
 						}
@@ -1974,7 +1973,6 @@ static void EraseAllSelectedText(Thoth_Editor *t, int *cursorIndex, Thoth_Editor
 	cursor->pos = endCursorPos;
 	RemoveStrFromText(t, cursorIndex, cursor->selection.len);
 	
-	// PutsCursor(*cursor);
 
 	if(newSize <= 0){
 		if(t->file->text) free(t->file->text);
@@ -1989,18 +1987,18 @@ static void EraseAllSelectedText(Thoth_Editor *t, int *cursorIndex, Thoth_Editor
 
 static void PutsCursor(Thoth_EditorCur c){
 	
-	fprintf(logfile, "CURSOR:\n");
-	fprintf(logfile, "\tselection: startPos: %i len: %i \n", 
+	printf( "CURSOR:\n");
+	printf( "\tselection: startPos: %i len: %i \n", 
 		c.selection.startCursorPos, c.selection.len);
 
 	if(c.clipboard)
-		fprintf(logfile, "\tclipboard: %s \n", c.clipboard);
+		printf( "\tclipboard: %s \n", c.clipboard);
 
 	if(c.savedText)
-		fprintf(logfile, "\tsavedText: %s \n", c.savedText);
+		printf( "\tsavedText: %s \n", c.savedText);
 
-	fprintf(logfile, "\taddedLen: %i\n", c.addedLen);
-	fprintf(logfile, "\tpos: %i\n", c.pos);
+	printf( "\taddedLen: %i\n", c.addedLen);
+	printf( "\tpos: %i\n", c.pos);
 }
 
 static void SaveCursors(Thoth_Editor *t, Thoth_EditorCmd *c){
@@ -2129,6 +2127,9 @@ static void RemoveStrFromText(Thoth_Editor *t, int *cursorIndex, int len){
 
 	t->file->text = (char *)realloc(t->file->text, (textLen - len) + 1);
 
+	t->cursors[*cursorIndex].selection.len = 0;
+	t->cursors[*cursorIndex].selection.startCursorPos = pos;
+
 	t->file->text[textLen - len] = 0;
 	t->file->textLen = strlen(t->file->text);
 	t->cursors[*cursorIndex].pos = pos;
@@ -2145,6 +2146,8 @@ static void UndoRemoveCharacters(Thoth_Editor *t, Thoth_EditorCmd *c){
 	for(k = t->nCursors-1; k >= 0; k--){
 
 		if(k < c->nSavedCursors && t->cursors[k].savedText){
+			t->cursors[k].selection.startCursorPos = t->cursors[k].pos;
+			t->cursors[k].selection.len = strlen(t->cursors[k].savedText);
 			AddStrToText(t, &k, t->cursors[k].savedText);
 		}
 	}
@@ -2288,6 +2291,8 @@ static void UndoAddCharacters(Thoth_Editor *t, Thoth_EditorCmd *c){
 	for(k = c->nSavedCursors-1; k >= 0; k--){
 		RemoveStrFromText(t, &k, strlen(c->keys));
 		if(k < c->nSavedCursors && c->savedCursors[k].savedText){
+			t->cursors[k].selection.startCursorPos = t->cursors[k].pos;
+			t->cursors[k].selection.len = strlen(c->savedCursors[k].savedText);
 			AddStrToText(t, &k, c->savedCursors[k].savedText);
 		}
 	}
