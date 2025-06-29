@@ -1644,6 +1644,121 @@ static int GetBetweenBrackets(char *text, int len, int pos, int *first, int *las
 	return 0;
 
 }
+static void IndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
+/*
+	needs saved text for knowing if
+[indent
+	indent]
+
+*/
+	LoadCursors(t,c);
+	RemoveExtraCursors(t);
+
+	if(c->hiddenCursors){
+		RemoveSelections(t);
+		int k;
+		for(k = 0; k < c->nHiddenCursors; k++){
+			int index = 0;
+			t->cursors[0].pos = c->hiddenCursors[k].pos;
+
+			if(c->hiddenCursors[k].addedLen){
+				AddStrToText(t, &index, "\t");
+				int m;
+				for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos++;
+			}
+
+			if(c->hiddenCursors[k].savedText){
+				RemoveStrFromText(t, &index, 1);
+				int m;
+				for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos--;
+			}
+		}
+		return;
+	}
+
+	Thoth_EditorSelection *sel = &t->cursors[0].selection;
+	
+	if(!sel->len){
+		sel->startCursorPos = t->cursors[0].pos - 
+				GetCharsIntoLine(t->file->text, t->cursors[0].pos);
+
+		if(t->file->text[sel->startCursorPos] == '\n')
+			sel->startCursorPos++;
+
+		sel->len =
+				GetStartOfNextLine(t->file->text, t->file->textLen, 
+					sel->startCursorPos) - sel->startCursorPos;
+	}
+
+	int startCursorPos=sel->startCursorPos;
+	int next = startCursorPos;
+	next = startCursorPos - GetCharsIntoLine(t->file->text, next);
+	if(t->file->text[next] == '\n') next++;
+
+	if(next < startCursorPos){
+		sel->startCursorPos = next;
+		sel->len += startCursorPos - next;
+	}
+ do {
+
+		t->cursors[0].pos = next;
+
+		if(c->num > 0){
+			c->hiddenCursors = (Thoth_EditorCur *)realloc(c->hiddenCursors, sizeof(Thoth_EditorCur) * ++c->nHiddenCursors);
+			Thoth_EditorCur *cur = &c->hiddenCursors[c->nHiddenCursors-1];
+			memset(cur, 0, sizeof(Thoth_EditorCur));
+			t->cursors[0].pos = next;
+			cur->addedLen = 1;
+			int index = 0;
+			AddStrToText(t, &index, "\t");
+			cur->pos = t->cursors[0].pos;
+			sel->len++;
+		} else {
+			if (t->file->text[t->cursors[0].pos] == '\t' || t->file->text[t->cursors[0].pos] == ' '){
+				c->hiddenCursors = (Thoth_EditorCur *)realloc(c->hiddenCursors, sizeof(Thoth_EditorCur) * ++c->nHiddenCursors);
+				Thoth_EditorCur *cur = &c->hiddenCursors[c->nHiddenCursors-1];
+				memset(cur, 0, sizeof(Thoth_EditorCur));
+				cur->pos = next;
+				t->cursors[0].pos = next+1;
+				cur->savedText = malloc(2);
+				cur->savedText[0] = '\t';
+				cur->savedText[1] = 0;
+				int index = 0;
+				RemoveStrFromText(t, &index, 1);
+			} 
+		}
+		next = GetStartOfNextLine(t->file->text, t->file->textLen, next);
+	} while(next < sel->startCursorPos+sel->len);
+	
+
+	SaveCursors(t,c);
+}
+
+static void UndoIndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
+	LoadCursors(t, c);
+
+	RemoveExtraCursors(t);
+	RemoveSelections(t);
+	int k;
+	for(k = 0; k < c->nHiddenCursors; k++){
+		int index = 0;
+		t->cursors[0].pos = c->hiddenCursors[k].pos;
+
+		if(c->hiddenCursors[k].addedLen){
+			RemoveStrFromText(t, &index, c->hiddenCursors[k].addedLen);
+			int m;
+			for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos--;
+		}
+
+		if(k < c->nHiddenCursors && c->hiddenCursors[k].savedText){
+			AddStrToText(t, &index, c->hiddenCursors[k].savedText);
+			int m;
+			for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos++;
+		}
+	}
+
+	SaveCursors(t, c);
+}
 
 static void ToggleComment(Thoth_Editor *t, Thoth_EditorCmd *c){
 
@@ -1656,15 +1771,16 @@ static void ToggleComment(Thoth_Editor *t, Thoth_EditorCmd *c){
 	int k;
 	for(k = 0; k < t->nCursors; k++){
 
-
 		if(t->cursors[k].selection.len == 0){
 
 			int lineEnd = GetStartOfNextLine(t->file->text, t->file->textLen, t->cursors[k].pos)-1;
-			int lineStart = t->cursors[k].pos - GetCharsIntoLine(t->file->text, t->cursors[k].pos);
+			int lineStart = t->cursors[k].pos - 
+			GetCharsIntoLine(t->file->text, t->cursors[k].pos);
+			if(t->file->text[lineStart] =='\n') lineStart++;
 
 			int j;
 			int toggled = 0;
-			for(j = lineEnd-1; j >= lineStart+1; j--){
+			for(j = lineEnd-1; j > lineStart; j--){
 
 				if(t->file->text[j] == '/' && t->file->text[j-1] == '/') {
 					t->cursors[k].pos = j+1;
@@ -1681,32 +1797,37 @@ static void ToggleComment(Thoth_Editor *t, Thoth_EditorCmd *c){
 			continue;
 		}
 
-
 		int startSelection = t->cursors[k].selection.startCursorPos - 
-		GetCharsIntoLine(t->file->text, t->cursors[k].selection.startCursorPos) ;
-		int endSelection = (t->cursors[k].selection.startCursorPos + 
-		t->cursors[k].selection.len) - 1;
+				GetCharsIntoLine(t->file->text, t->cursors[k].selection.startCursorPos);
+
+		if(t->file->text[startSelection] == '\n')
+			startSelection++;
+
+		int endSelection = GetStartOfNextLine(t->file->text, t->file->textLen, 
+					t->cursors[k].selection.startCursorPos+t->cursors[k].selection.len);
+
+		t->cursors[k].selection.len = endSelection - startSelection;
+		t->cursors[k].selection.startCursorPos = startSelection;
 
 		int m;
 		for(m = startSelection; m < endSelection; m++){
 			
-			for(; (t->file->text[m] == '\t' || t->file->text[m] == ' ')
-			 && m < endSelection; m++);
+			while((t->file->text[m] == '\t' || t->file->text[m] == ' ')
+			 && m < endSelection) m++;
 
 			if(strncmp(&t->file->text[m], "//", 2) == 0) {
 				t->cursors[k].pos = m+2;
 				RemoveStrFromText(t, &k, 2);
-				t->cursors[k].pos = m;
-				t->cursors[k].selection.len -= 2;
 				endSelection -= 2;
 			} else {
 				t->cursors[k].pos = m;
 				AddStrToText(t, &k, "//");
-				t->cursors[k].selection.len += 2;
 				endSelection+=2;
 				m += 2;
 			}
 
+			t->cursors[k].pos = startSelection;
+			t->cursors[k].selection.len = endSelection - startSelection;
 			for(; m < endSelection; m++)
 				if(t->file->text[m] == '\n') break;
 		}
@@ -2340,122 +2461,6 @@ static void UndoAddCharacters(Thoth_Editor *t, Thoth_EditorCmd *c){
 	// memset(c->savedTexts, 0, sizeof(char*) * c->nSavedCursors);
 // }
 
-static void IndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
-/*
-	needs saved text for knowing if
-[indent
-	indent]
-
-*/
-	LoadCursors(t,c);
-	RemoveExtraCursors(t);
-
-	if(c->hiddenCursors){
-		RemoveSelections(t);
-		int k;
-		for(k = 0; k < c->nHiddenCursors; k++){
-			int index = 0;
-			t->cursors[0].pos = c->hiddenCursors[k].pos;
-
-			if(c->hiddenCursors[k].addedLen){
-				AddStrToText(t, &index, "\t");
-				int m;
-				for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos++;
-			}
-
-			if(c->hiddenCursors[k].savedText){
-				RemoveStrFromText(t, &index, 1);
-				int m;
-				for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos--;
-			}
-		}
-		return;
-	}
-
-	Thoth_EditorSelection *sel = &t->cursors[0].selection;
-	
-	if(!sel->len){
-		sel->startCursorPos = t->cursors[0].pos - 
-				GetCharsIntoLine(t->file->text, t->cursors[0].pos);
-
-		if(t->file->text[sel->startCursorPos] == '\n')
-			sel->startCursorPos++;
-
-		sel->len =
-				GetStartOfNextLine(t->file->text, t->file->textLen, 
-					sel->startCursorPos) - sel->startCursorPos;
-	}
-
-	int startCursorPos=sel->startCursorPos;
-	int next = startCursorPos;
-	next = startCursorPos - GetCharsIntoLine(t->file->text, next);
-	if(t->file->text[next] == '\n') next++;
-
-	if(next < startCursorPos){
-		sel->startCursorPos = next;
-		sel->len += startCursorPos - next;
-	}
-
-	do {
-
-		t->cursors[0].pos = next;
-
-		if(c->num > 0){
-			c->hiddenCursors = (Thoth_EditorCur *)realloc(c->hiddenCursors, sizeof(Thoth_EditorCur) * ++c->nHiddenCursors);
-			Thoth_EditorCur *cur = &c->hiddenCursors[c->nHiddenCursors-1];
-			memset(cur, 0, sizeof(Thoth_EditorCur));
-			t->cursors[0].pos = next;
-			cur->addedLen = 1;
-			int index = 0;
-			AddStrToText(t, &index, "\t");
-			cur->pos = t->cursors[0].pos;
-			sel->len++;
-		} else {
-			if (t->file->text[t->cursors[0].pos] == '\t' || t->file->text[t->cursors[0].pos] == ' '){
-				c->hiddenCursors = (Thoth_EditorCur *)realloc(c->hiddenCursors, sizeof(Thoth_EditorCur) * ++c->nHiddenCursors);
-				Thoth_EditorCur *cur = &c->hiddenCursors[c->nHiddenCursors-1];
-				memset(cur, 0, sizeof(Thoth_EditorCur));
-				cur->pos = next;
-				t->cursors[0].pos = next+1;
-				cur->savedText = malloc(2);
-				cur->savedText[0] = '\t';
-				cur->savedText[1] = 0;
-				int index = 0;
-				RemoveStrFromText(t, &index, 1);
-			} 
-		}
-		next = GetStartOfNextLine(t->file->text, t->file->textLen, next);
-	} while(next < sel->startCursorPos+sel->len);
-	t->cursors[0].pos = sel->startCursorPos;
-
-	SaveCursors(t,c);
-}
-
-static void UndoIndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
-	LoadCursors(t, c);
-
-	RemoveExtraCursors(t);
-	RemoveSelections(t);
-	int k;
-	for(k = 0; k < c->nHiddenCursors; k++){
-		int index = 0;
-		t->cursors[0].pos = c->hiddenCursors[k].pos;
-
-		if(c->hiddenCursors[k].addedLen){
-			RemoveStrFromText(t, &index, c->hiddenCursors[k].addedLen);
-			int m;
-			for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos--;
-		}
-
-		if(k < c->nHiddenCursors && c->hiddenCursors[k].savedText){
-			AddStrToText(t, &index, c->hiddenCursors[k].savedText);
-			int m;
-			for(m = k; m < c->nHiddenCursors; m++) c->hiddenCursors[m].pos++;
-		}
-	}
-
-	SaveCursors(t, c);
-}
 
 static void LoggingRemoveCharacter(Thoth_Editor *t){
 	if(t->logging < THOTH_LOGMODE_MODES_INPUTLESS){
