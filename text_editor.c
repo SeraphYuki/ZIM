@@ -1508,6 +1508,7 @@ static void UndoPaste(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 		if(k < c->nSavedCursors && c->savedCursors[k].savedText){
 			AddStrToText(t, &k, c->savedCursors[k].savedText);
+			t->cursors[k].selection.len = strlen(c->savedCursors[k].savedText);
 		}
 	}
 
@@ -2341,7 +2342,8 @@ static void IndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 */
 	LoadCursors(t,c);
-
+	RemoveExtraCursors(t);
+	RemoveSelections(t);
 
 	if(t->cursors[0].selection.len){
 
@@ -2438,6 +2440,9 @@ static void IndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 static void UndoIndentLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 	LoadCursors(t, c);
+
+	RemoveExtraCursors(t);
+	RemoveSelections(t);
 
 	int k;
 	for(k = c->nSavedCursors-1; k >= 0; k--){
