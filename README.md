@@ -19,6 +19,7 @@ New <b>colorscheme</b> is: https://github.com/morhetz/gruvbox<br>
 ![Screenshot](Screenshots/lib.gif)<br><br>
 <b>TODO</b>:<br>
 resolvecursorcollisions bug with replacing<br>
+bug multiline deleteline<br>
 directory bug<br>
 make command bug<br>
 cursor bugs<br>
