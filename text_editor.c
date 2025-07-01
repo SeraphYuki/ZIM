@@ -1804,7 +1804,7 @@ static void ToggleComment(Thoth_Editor *t, Thoth_EditorCmd *c){
 			startSelection++;
 
 		int endSelection = GetStartOfNextLine(t->file->text, t->file->textLen, 
-					t->cursors[k].selection.startCursorPos+t->cursors[k].selection.len);
+					t->cursors[k].selection.startCursorPos+t->cursors[k].selection.len)-1;
 
 		t->cursors[k].selection.len = endSelection - startSelection;
 		t->cursors[k].selection.startCursorPos = startSelection;
