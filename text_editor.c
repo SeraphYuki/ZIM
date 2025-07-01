@@ -1960,37 +1960,23 @@ static void DeleteLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 	LoadCursors(t,c);
 	// RefreshEditorCommand(c);
-
-/*
-	problem, resolvecollisions is making there be less cursors, not as many as savedtexts,
-	so need to know to insert twice for combined cursors that were in the same location.
-*/
-
-	int k;
-	for(k = 0; k < t->nCursors; k++){
-
-		Thoth_EditorCur *cursor = &t->cursors[k];
-
-		int start;
-		int end;
-
-		if(cursor->selection.len){
-			start = cursor->selection.startCursorPos - GetCharsIntoLine(t->file->text, cursor->selection.startCursorPos);
-			end = GetStartOfNextLine(t->file->text,t->file->textLen, cursor->selection.startCursorPos+cursor->selection.len - 1);
-		} else {
-			start = cursor->pos - GetCharsIntoLine(t->file->text, cursor->pos);
-			end = GetStartOfNextLine(t->file->text,t->file->textLen, cursor->pos);
-		}
-
-
-		cursor->pos = end;
-		AddSavedText(t, &t->file->text[start], end-start, &k);
-		RemoveStrFromText(t, &k, end-start);
-
-	}
-
 	RemoveSelections(t);
 	RemoveExtraCursors(t);
+
+
+	Thoth_EditorCur *cursor = &t->cursors[0];
+
+	int start;
+	int end;
+
+	start = cursor->pos - GetCharsIntoLine(t->file->text, cursor->pos);
+	end = GetStartOfNextLine(t->file->text,t->file->textLen, cursor->pos);
+
+	int k = 0;
+	cursor->pos = end;
+	AddSavedText(t, &t->file->text[start], end-start, &k);
+	RemoveStrFromText(t, &k, end-start);
+
 	SaveCursors(t,c);
 }
 
