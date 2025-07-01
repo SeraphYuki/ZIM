@@ -1946,7 +1946,6 @@ static void UndoDeleteLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 		int pos = t->cursors[k].pos;
 		AddStrToText(t, &k, c->savedCursors[k].savedText);
 		t->cursors[k].pos = pos;
-		t->cursors[k].selection.len = strlen(c->savedCursors[k].savedText);
 
 	}
 	SaveCursors(t, c);
@@ -1960,8 +1959,8 @@ static void DeleteLine(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 	LoadCursors(t,c);
 	// RefreshEditorCommand(c);
-	RemoveSelections(t);
 	RemoveExtraCursors(t);
+	RemoveSelections(t);
 
 
 	Thoth_EditorCur *cursor = &t->cursors[0];
