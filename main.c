@@ -75,10 +75,10 @@ void Event(Thoth_t *t){
 #endif
 
 	if(ev.type == SDL_EVENT_DROP_FILE){
-		char *drop = ev.drop.data;
+		char drop[512];
+		strcpy(drop, ev.drop.data);
 		Thoth_Editor_LoadFile(&t->te, drop);
 		t->state = THOTH_STATE_UPDATEDRAW;
-		SDL_free(drop);
 		return;
 	}
 	if(ev.type == SDL_EVENT_QUIT){
@@ -161,13 +161,13 @@ void Event(Thoth_t *t){
 		t->state = THOTH_STATE_UPDATE;        
 
 #ifndef LIBRARY_COMPILE
-	if(ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED){
+	} else if(ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED){
+		Thoth_Graphics_ViewportXY(&t->graphics, 0, 0);
 		Thoth_Graphics_Resize(&t->graphics, ev.window.data1, ev.window.data2);
 		Thoth_Graphics_Clear(&t->graphics);
 		Thoth_Editor_Draw(&t->te);        
 		Thoth_Graphics_Render(&t->graphics);
 		Window_Swap();
-	}
 #endif
 	}
 }
