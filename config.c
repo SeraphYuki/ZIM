@@ -12,16 +12,16 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	    int g;
 	    int b;
 	} defaultColors[] = { 
-		{0,255,255}, // cyan
-		{255,0,0},//red
-		{255,255,0},//yellow
-		{0,0,255},//blue
-		{0,255,0}, //green
-		{255,0,255}, //magenta purple
-		{255,255,255},//fg
-		{0,0,0},//bg
-		{127,127,127},//grey
-		{0,0,0},//bg
+		{ 0x8e, 0xc0 ,0x7c},
+		{ 0xfb, 0x49 ,0x34},
+		{ 0xfa, 0xbd ,0x2f},
+		{ 0x83, 0xa5 ,0x98},
+		{ 0xb8, 0xbb ,0x26},
+		{ 0xd3, 0x86 ,0x9b},
+		{ 0xeb, 0xdb ,0xb2},
+		{ 0x28, 0x28 ,0x28},
+		{ 0x92, 0x83 ,0x74},
+		{ 0x28, 0x28 ,0x28 },
 	};
 	#ifdef LINUX_COMPILE
 	strcpy(cfg->makecmd, "make");
