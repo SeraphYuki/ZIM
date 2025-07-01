@@ -6,7 +6,7 @@
 #include "file_browser.h"
 #include <stdio.h>
 #include <fcntl.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

@@ -2,8 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <SDL2/SDL.h>
-
+#include <SDL3/SDL.h>
 #include "text_editor.h"
 #include "window.h"
 #include "memory.h"
@@ -75,19 +74,19 @@ void Event(Thoth_t *t){
 	}
 #endif
 
-	if(ev.type == SDL_DROPFILE){
-		char *drop = ev.drop.file;
+	if(ev.type == SDL_EVENT_DROP_FILE){
+		char *drop = ev.drop.data;
 		Thoth_Editor_LoadFile(&t->te, drop);
 		t->state = THOTH_STATE_UPDATEDRAW;
 		SDL_free(drop);
 		return;
 	}
-	if(ev.type == SDL_QUIT){
+	if(ev.type == SDL_EVENT_QUIT){
 		t->state = THOTH_STATE_QUIT;
 		return;
 	}
 
-	if(ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT){
+	if(ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN && ev.button.button == SDL_BUTTON_LEFT){
 
 		if(!t->mousedown){
 			int x = ev.button.x / Thoth_Graphics_FontWidth(&t->graphics);
@@ -105,11 +104,11 @@ void Event(Thoth_t *t){
 		}
 	}
 
-	if(ev.type == SDL_MOUSEBUTTONUP && ev.button.button == SDL_BUTTON_LEFT){
+	if(ev.type == SDL_EVENT_MOUSE_BUTTON_UP && ev.button.button == SDL_BUTTON_LEFT){
 		t->mousedown = 0;
 		return;
 	}
-	if(ev.type == SDL_MOUSEMOTION){
+	if(ev.type == SDL_EVENT_MOUSE_MOTION){
 		if(t->mousedown){
 			int x = ev.motion.x / Thoth_Graphics_FontWidth(&t->graphics);
 			int y = ev.motion.y / Thoth_Graphics_FontHeight(&t->graphics);
@@ -120,23 +119,23 @@ void Event(Thoth_t *t){
 		}
 	}
 	
-	if(ev.type == SDL_KEYDOWN){
+	if(ev.type == SDL_EVENT_KEY_DOWN){
 		
 		int key = t->key & THOTH_ENTER_KEY ? t->key ^ THOTH_ENTER_KEY : t->key;
 
-		if(ev.key.keysym.sym == SDLK_RETURN) key |= THOTH_ENTER_KEY;
-		else if(ev.key.keysym.sym == SDLK_TAB) key = 9;
-		else if(ev.key.keysym.sym == SDLK_ESCAPE) key = 27;
-		else if(ev.key.keysym.sym == SDLK_BACKSPACE) key = 127;
-		else if(ev.key.keysym.sym == SDLK_LSHIFT || ev.key.keysym.sym == SDLK_RSHIFT) key |= THOTH_SHIFT_KEY;
-		else if(ev.key.keysym.sym == SDLK_LALT || ev.key.keysym.sym == SDLK_RALT) key |= THOTH_ALT_KEY;
-		else if(ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL) key |= THOTH_CTRL_KEY;
-		else if(ev.key.keysym.sym == SDLK_RIGHT) key |= THOTH_ARROW_RIGHT;
-		else if(ev.key.keysym.sym == SDLK_UP) key |= THOTH_ARROW_UP;
-		else if(ev.key.keysym.sym == SDLK_LEFT) key |= THOTH_ARROW_LEFT;
-		else if(ev.key.keysym.sym == SDLK_DOWN) key |= THOTH_ARROW_DOWN;
+		if(ev.key.key == SDLK_RETURN) key |= THOTH_ENTER_KEY;
+		else if(ev.key.key == SDLK_TAB) key = 9;
+		else if(ev.key.key == SDLK_ESCAPE) key = 27;
+		else if(ev.key.key == SDLK_BACKSPACE) key = 127;
+		else if(ev.key.key == SDLK_LSHIFT || ev.key.key == SDLK_RSHIFT) key |= THOTH_SHIFT_KEY;
+		else if(ev.key.key == SDLK_LALT || ev.key.key == SDLK_RALT) key |= THOTH_ALT_KEY;
+		else if(ev.key.key == SDLK_LCTRL || ev.key.key == SDLK_RCTRL) key |= THOTH_CTRL_KEY;
+		else if(ev.key.key == SDLK_RIGHT) key |= THOTH_ARROW_RIGHT;
+		else if(ev.key.key == SDLK_UP) key |= THOTH_ARROW_UP;
+		else if(ev.key.key == SDLK_LEFT) key |= THOTH_ARROW_LEFT;
+		else if(ev.key.key == SDLK_DOWN) key |= THOTH_ARROW_DOWN;
 		else if(key & THOTH_CTRL_KEY)
-			key = (t->key&0xFF00) | (ev.key.keysym.sym & 0xFF);
+			key = (t->key&0xFF00) | (ev.key.key & 0xFF);
 
 		if(key != t->key || key & THOTH_ARROW_RIGHT || key & THOTH_ARROW_UP || key & THOTH_ARROW_DOWN || key & THOTH_ARROW_LEFT)
 			t->state = THOTH_STATE_UPDATE;
@@ -145,31 +144,30 @@ void Event(Thoth_t *t){
 
 
 
-	} else if(ev.type == SDL_KEYUP) {
+	} else if(ev.type == SDL_EVENT_KEY_UP) {
 
-		if(ev.key.keysym.sym == SDLK_LSHIFT || ev.key.keysym.sym == SDLK_RSHIFT) t->key ^= THOTH_SHIFT_KEY;
-		else if(ev.key.keysym.sym == SDLK_LALT || ev.key.keysym.sym == SDLK_RALT) t->key ^= THOTH_ALT_KEY;
-		else if(ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL) t->key ^= THOTH_CTRL_KEY;
-		else if(ev.key.keysym.sym == SDLK_RETURN) t->key ^= THOTH_ENTER_KEY;
-		else if(ev.key.keysym.sym == SDLK_RIGHT) t->key ^= THOTH_ARROW_RIGHT;
-		else if(ev.key.keysym.sym == SDLK_UP) t->key ^= THOTH_ARROW_UP;
-		else if(ev.key.keysym.sym == SDLK_LEFT) t->key ^= THOTH_ARROW_LEFT;
-		else if(ev.key.keysym.sym == SDLK_DOWN) t->key ^= THOTH_ARROW_DOWN;
+		if(ev.key.key == SDLK_LSHIFT || ev.key.key == SDLK_RSHIFT) t->key ^= THOTH_SHIFT_KEY;
+		else if(ev.key.key == SDLK_LALT || ev.key.key == SDLK_RALT) t->key ^= THOTH_ALT_KEY;
+		else if(ev.key.key == SDLK_LCTRL || ev.key.key == SDLK_RCTRL) t->key ^= THOTH_CTRL_KEY;
+		else if(ev.key.key == SDLK_RETURN) t->key ^= THOTH_ENTER_KEY;
+		else if(ev.key.key == SDLK_RIGHT) t->key ^= THOTH_ARROW_RIGHT;
+		else if(ev.key.key == SDLK_UP) t->key ^= THOTH_ARROW_UP;
+		else if(ev.key.key == SDLK_LEFT) t->key ^= THOTH_ARROW_LEFT;
+		else if(ev.key.key == SDLK_DOWN) t->key ^= THOTH_ARROW_DOWN;
 
 
-	} else if(ev.type == SDL_TEXTINPUT){
+	} else if(ev.type == SDL_EVENT_TEXT_INPUT){
 		t->key = (t->key&0xFF00) | (ev.text.text[0] & 0xFF);
 		t->state = THOTH_STATE_UPDATE;        
 
 #ifndef LIBRARY_COMPILE
-	} else if (ev.type == SDL_WINDOWEVENT){
-		if(ev.window.event == SDL_WINDOWEVENT_RESIZED || ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED){
-			Thoth_Graphics_Resize(&t->graphics, ev.window.data1, ev.window.data2);
-			Thoth_Graphics_Clear(&t->graphics);
-			Thoth_Editor_Draw(&t->te);        
-			Thoth_Graphics_Render(&t->graphics);
-			Window_Swap();
-		}
+	if(ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED){
+		Thoth_Graphics_Resize(&t->graphics, ev.window.data1, ev.window.data2);
+		Thoth_Graphics_Clear(&t->graphics);
+		Thoth_Editor_Draw(&t->te);        
+		Thoth_Graphics_Render(&t->graphics);
+		Window_Swap();
+	}
 #endif
 	}
 }
@@ -196,7 +194,7 @@ Thoth_t *Thoth_Create(int w, int h){
 	Thoth_Editor_Init(&t->te, &t->graphics, &t->cfg);
 	Thoth_Editor_LoadFile(&t->te, NULL);
 
-	SDL_StartTextInput();
+	SDL_StartTextInput(Window_GetWindow());
 
    Thoth_Graphics_Clear(&t->graphics);
    Thoth_Editor_Draw(&t->te);        
@@ -252,7 +250,6 @@ void Thoth_Destroy(Thoth_t *t){
 #ifndef LIBRARY_COMPILE
 int main(int argc, char **argv){
 	Window_Open();
-
 	Thoth_t t;
 	memset(&t,0,sizeof(Thoth_t));
 
@@ -275,7 +272,7 @@ int main(int argc, char **argv){
 		Thoth_Editor_LoadFile(&t.te, NULL);
 
 
-	SDL_StartTextInput();
+	SDL_StartTextInput(Window_GetWindow());
 	// u32 currTime;
 	// u32 frames = 0;
 	// u32 lastSecond = SDL_GetTicks();

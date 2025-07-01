@@ -5,8 +5,8 @@
 #define GLEW_STATIC
 #endif
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 #include "window.h"
 #include "types.h"
 #include <stdio.h>
@@ -15,6 +15,7 @@
 static SDL_Window *window;
 static SDL_GLContext context;
 
+SDL_Window *Window_GetWindow(){ return window; }
 int Window_Open(){
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -23,8 +24,6 @@ int Window_Open(){
 
     window = SDL_CreateWindow(
         WINDOW_TITLE,
-        10,
-        39,
         WINDOW_INIT_WIDTH,
         WINDOW_INIT_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
@@ -83,16 +82,22 @@ int Window_Open(){
 0x00000008, 0x0000000f, 0x00000013, 0x00000015, 0x00000016, 0x00000017, 0x0000000c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x0000004f, 0x000000c1, 0x000000a8, 0x00000061, 0x00000017, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 
 };
 
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(pixels,48,48,24,48*4,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
+        48,48,
+        SDL_PIXELFORMAT_RGBA8888,
+        pixels,
+        48*4);
 
     SDL_SetWindowIcon(window, surface);
 
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
     
     context = SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1);
 
     context = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, context);
+    
     SDL_GL_SetSwapInterval(1);
 
     glewExperimental = GL_TRUE;
@@ -117,7 +122,7 @@ int Window_Open(){
 }
 
 void Window_Close(){
-    SDL_GL_DeleteContext(context);
+    SDL_GL_DestroyContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

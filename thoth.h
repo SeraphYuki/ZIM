@@ -3,7 +3,7 @@
 #include "text_editor.h"
 #include "graphics.h"
 #include "config.h"
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 typedef struct {
     int state;
