@@ -3,7 +3,6 @@
 #include <string.h>
 #include "config.h"
 #include "thoth.h"
-#include "window.h"
 
 void Thoth_Config_Read(Thoth_Config *cfg){
 	memset(cfg, 0, sizeof(Thoth_Config));
@@ -12,15 +11,15 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	    int g;
 	    int b;
 	} defaultColors[] = { 
-		{ 0x8e, 0xc0 ,0x7c},
-		{ 0xfb, 0x49 ,0x34},
-		{ 0xfa, 0xbd ,0x2f},
-		{ 0x83, 0xa5 ,0x98},
-		{ 0xb8, 0xbb ,0x26},
-		{ 0xd3, 0x86 ,0x9b},
-		{ 0xeb, 0xdb ,0xb2},
-		{ 0x28, 0x28 ,0x28},
-		{ 0x92, 0x83 ,0x74},
+		{ 0x8e, 0xc0 ,0x7c},
+		{ 0xfb, 0x49 ,0x34},
+		{ 0xfa, 0xbd ,0x2f},
+		{ 0x83, 0xa5 ,0x98},
+		{ 0xb8, 0xbb ,0x26},
+		{ 0xd3, 0x86 ,0x9b},
+		{ 0xeb, 0xdb ,0xb2},
+		{ 0x28, 0x28 ,0x28},
+		{ 0x92, 0x83 ,0x74},
 		{ 0x28, 0x28 ,0x28 },
 	};
 	#ifdef LINUX_COMPILE
@@ -41,6 +40,7 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	cfg->keybinds[THOTH_SaveAsFile] = THOTH_CTRL_KEY|THOTH_SHIFT_KEY|'s';
 	cfg->keybinds[THOTH_SaveFile] = THOTH_CTRL_KEY|'s';
 	cfg->keybinds[THOTH_ToggleComment] = THOTH_CTRL_KEY|'/';
+	cfg->keybinds[THOTH_ToggleCommentMulti] = THOTH_CTRL_KEY|THOTH_SHIFT_KEY|'/';
 	cfg->keybinds[THOTH_MoveBrackets] = THOTH_CTRL_KEY|'m';
 	cfg->keybinds[THOTH_SelectBrackets] = THOTH_CTRL_KEY|THOTH_SHIFT_KEY|'j';
 	cfg->keybinds[THOTH_GotoLine] = THOTH_CTRL_KEY|'g';
@@ -71,46 +71,33 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	cfg->keybinds[THOTH_Copy] = 	'c'|THOTH_CTRL_KEY;
 	cfg->keybinds[THOTH_Paste] ='v'|THOTH_CTRL_KEY;
 
+	memcpy(&cfg->colorPairs[THOTH_COLOR_SIDE_NUMBERS], (int[]){ THOTH_COLOR_WHITE, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_NORMAL], (int[]){ THOTH_COLOR_WHITE, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_KEYWORD], (int[]){ THOTH_COLOR_CYAN, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_COMMENT], (int[]){ THOTH_COLOR_GREY, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_TOKEN], (int[]){ THOTH_COLOR_GREEN, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_NUM], (int[]){ THOTH_COLOR_RED, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_FUNCTION], (int[]){ THOTH_COLOR_YELLOW, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_STRING], (int[]){ THOTH_COLOR_MAGENTA, THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_SELECTED], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_GREEN }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_SELECTED_DIRECTORY], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_CYAN }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_UNSELECTED_DIRECTORY], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_WHITE }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_AUTO_COMPLETE], (int[]){ THOTH_COLOR_BLACK, THOTH_COLOR_WHITE }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_LOG_UNSELECTED], (int[]){ THOTH_COLOR_BLACK, THOTH_COLOR_WHITE }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_CURSOR], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_MAGENTA }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_FIND], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_WHITE }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_LINE_NUM], (int[]){ THOTH_COLOR_WHITE ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_COLOR_LINENUM_CURSOR], (int[]){ THOTH_COLOR_GREEN ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_BLACK], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_WHITE }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_WHITE], (int[]){ THOTH_COLOR_WHITE ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_CYAN], (int[]){ THOTH_COLOR_CYAN ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_RED], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_YELLOW], (int[]){ THOTH_COLOR_YELLOW ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_BLUE], (int[]){ THOTH_COLOR_BLUE ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_GREEN], (int[]){ THOTH_COLOR_GREEN ,THOTH_COLOR_BLACK }, sizeof(int)*2);
+	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_MAGENTA], (int[]){ THOTH_COLOR_MAGENTA ,THOTH_COLOR_BLACK }, sizeof(int)*2);
 
-
-	memcpy(&cfg->colorPairs[THOTH_COLOR_SIDE_NUMBERS-1], (int[]){ THOTH_COLOR_WHITE, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_NORMAL-1], (int[]){ THOTH_COLOR_WHITE, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_KEYWORD-1], (int[]){ THOTH_COLOR_CYAN, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_COMMENT-1], (int[]){ THOTH_COLOR_GREY, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_TOKEN-1], (int[]){ THOTH_COLOR_BLUE, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_NUM-1], (int[]){ THOTH_COLOR_RED, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_FUNCTION-1], (int[]){ THOTH_COLOR_YELLOW, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_STRING-1], (int[]){ THOTH_COLOR_MAGENTA, THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_SELECTED-1], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_CYAN }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_SELECTED_DIRECTORY-1], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_CYAN }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_UNSELECTED_DIRECTORY-1], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_WHITE }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_AUTO_COMPLETE-1], (int[]){ THOTH_COLOR_BLACK, THOTH_COLOR_WHITE }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_LOG_UNSELECTED-1], (int[]){ THOTH_COLOR_BLACK, THOTH_COLOR_WHITE }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_CURSOR-1], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_MAGENTA }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_FIND-1], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_WHITE }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_COLOR_LINE_NUM-1], (int[]){ THOTH_COLOR_GREY ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_BLACK-1], (int[]){ THOTH_COLOR_BLACK ,THOTH_COLOR_WHITE }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_WHITE-1], (int[]){ THOTH_COLOR_WHITE ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_CYAN-1], (int[]){ THOTH_COLOR_CYAN ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_RED-1], (int[]){ THOTH_COLOR_RED ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_YELLOW-1], (int[]){ THOTH_COLOR_YELLOW ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_BLUE-1], (int[]){ THOTH_COLOR_BLUE ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_GREEN-1], (int[]){ THOTH_COLOR_GREEN ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	memcpy(&cfg->colorPairs[THOTH_TE_COLOR_MAGENTA-1], (int[]){ THOTH_COLOR_MAGENTA ,THOTH_COLOR_BLACK }, sizeof(int)*2);
-	//gruvbox
-	// aurora
-
-	// {0xa1/255.0f,0xef/255.0f,0xe4/255.0f}, //cyan
-	// {0xff/255.0f,0x58/255.0f,0x74/255.0f}, //red
-	// {0xec/255.0f,0xc4/255.0f,0x8d/255.0f}, //yellow
-	// {0x82/255.0f,0xaa/255.0f,0xf0/255.0f}, //blue
-	// {0xad/255.0f,0xdb/255.0f,0x67/255.0f}, //green
-	// {0xbd/255.0f,0x93/255.0f,0xf3/255.0f}, //magenta
-	// {0xd6/255.0f,0xde/255.0f,0xeb/255.0f}, //white
-	//     {0x14/255.0f,0x14/255.0f,0x15/255.0f}, // black
-	//     {0x74/255.0f,0x74/255.0f,0x75/255.0f}, // grey
-	// {0x14/255.0f,0x14/255.0f,0x15/255.0f}, //bg
-	
+	cfg->tabs = DEFAULT_TAB_WIDTH;
 
 	FILE *fp = fopen(THOTH_CONFIG_FILE,"rb");
 
@@ -144,10 +131,10 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 						*keybinding |= THOTH_ARROW_DOWN;
 					else if(strcmp(bind, "ARROW_UP") == 0)
 						*keybinding |= THOTH_ARROW_UP;
-					else if(strcmp(bind, "ARROW_LEFT") == 0)
-						*keybinding |= THOTH_ARROW_LEFT;
 					else if(strcmp(bind, "ARROW_RIGHT") == 0)
 						*keybinding |= THOTH_ARROW_RIGHT;
+					else if(strcmp(bind, "ARROW_LEFT") == 0)
+						*keybinding |= THOTH_ARROW_LEFT;
 				}
 			}			
 		}
@@ -161,38 +148,35 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 			    while(!feof(fp) && fgetc(fp) != '\n'){}
 			    continue;
 			}
-			
 
 			if(strcmp(lineType, "MakeCMD") == 0)
 			    fscanf(fp, "%s", cfg->makecmd);
-			if(strcmp(lineType, "COLOR_CYAN") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_CYAN-1].r, &defaultColors[THOTH_COLOR_CYAN-1].g, &defaultColors[THOTH_COLOR_CYAN-1].b);
+			else if(strcmp(lineType, "COLOR_CYAN") == 0)
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_CYAN].r, &defaultColors[THOTH_COLOR_CYAN].g, &defaultColors[THOTH_COLOR_CYAN].b);
 			else if(strcmp(lineType, "COLOR_RED") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_RED-1].r, &defaultColors[THOTH_COLOR_RED-1].g, &defaultColors[THOTH_COLOR_RED-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_RED].r, &defaultColors[THOTH_COLOR_RED].g, &defaultColors[THOTH_COLOR_RED].b);
 			else if(strcmp(lineType, "COLOR_YELLOW") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_YELLOW-1].r, &defaultColors[THOTH_COLOR_YELLOW-1].g, &defaultColors[THOTH_COLOR_YELLOW-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_YELLOW].r, &defaultColors[THOTH_COLOR_YELLOW].g, &defaultColors[THOTH_COLOR_YELLOW].b);
 			else if(strcmp(lineType, "COLOR_BLUE") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BLUE-1].r, &defaultColors[THOTH_COLOR_BLUE-1].g, &defaultColors[THOTH_COLOR_BLUE-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BLUE].r, &defaultColors[THOTH_COLOR_BLUE].g, &defaultColors[THOTH_COLOR_BLUE].b);
 			else if(strcmp(lineType, "COLOR_GREEN") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_GREEN-1].r, &defaultColors[THOTH_COLOR_GREEN-1].g, &defaultColors[THOTH_COLOR_GREEN-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_GREEN].r, &defaultColors[THOTH_COLOR_GREEN].g, &defaultColors[THOTH_COLOR_GREEN].b);
 			else if(strcmp(lineType, "COLOR_MAGENTA") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_MAGENTA-1].r, &defaultColors[THOTH_COLOR_MAGENTA-1].g, &defaultColors[THOTH_COLOR_MAGENTA-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_MAGENTA].r, &defaultColors[THOTH_COLOR_MAGENTA].g, &defaultColors[THOTH_COLOR_MAGENTA].b);
 			else if(strcmp(lineType, "COLOR_WHITE") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_WHITE-1].r, &defaultColors[THOTH_COLOR_WHITE-1].g, &defaultColors[THOTH_COLOR_WHITE-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_WHITE].r, &defaultColors[THOTH_COLOR_WHITE].g, &defaultColors[THOTH_COLOR_WHITE].b);
 			else if(strcmp(lineType, "COLOR_BLACK") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BLACK-1].r, &defaultColors[THOTH_COLOR_BLACK-1].g, &defaultColors[THOTH_COLOR_BLACK-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BLACK].r, &defaultColors[THOTH_COLOR_BLACK].g, &defaultColors[THOTH_COLOR_BLACK].b);
 			else if(strcmp(lineType, "COLOR_GREY") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_GREY-1].r, &defaultColors[THOTH_COLOR_GREY-1].g, &defaultColors[THOTH_COLOR_GREY-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_GREY].r, &defaultColors[THOTH_COLOR_GREY].g, &defaultColors[THOTH_COLOR_GREY].b);
 			else if(strcmp(lineType, "COLOR_BG") == 0)
-			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BG-1].r, &defaultColors[THOTH_COLOR_BG-1].g, &defaultColors[THOTH_COLOR_BG-1].b);
+			    fscanf(fp, "%x %x %x", &defaultColors[THOTH_COLOR_BG].r, &defaultColors[THOTH_COLOR_BG].g, &defaultColors[THOTH_COLOR_BG].b);
 			else if(strcmp(lineType, "MoveLinesText_UP") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveLinesText_UP]);
 			else if(strcmp(lineType, "MoveLinesText_DOWN") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveLinesText_DOWN]);
 			else if(strcmp(lineType, "OpenFileBrowser") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_OpenFileBrowser]);
-			else if(strcmp(lineType, "OpenFileZim") == 0)
-				ReadCommand(&cfg->keybinds[THOTH_OpenFileZim]);
 			else if(strcmp(lineType, "NewFile") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_NewFile]);
 			else if(strcmp(lineType, "CloseFile") == 0)
@@ -205,6 +189,8 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 				ReadCommand(&cfg->keybinds[THOTH_SaveFile]);
 			else if(strcmp(lineType, "ToggleComment") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_ToggleComment]);
+			else if(strcmp(lineType, "ToggleCommentMulti") == 0)
+				ReadCommand(&cfg->keybinds[THOTH_ToggleCommentMulti]);
 			else if(strcmp(lineType, "MoveBrackets") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveBrackets]);
 			else if(strcmp(lineType, "SelectBrackets") == 0)
@@ -227,7 +213,7 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 				ReadCommand(&cfg->keybinds[THOTH_ExpandSelectionLines]);
 			else if(strcmp(lineType, "DeleteLine") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_DeleteLine]);
-			else if(strcmp(lineType, "MoveByChars_BACK") == 0)
+			else if(strcmp(lineType, "MoveByChars_BACKWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveByChars_BACK]);
 			else if(strcmp(lineType, "MoveByChars_FORWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveByChars_FORWARD]);
@@ -235,15 +221,15 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 				ReadCommand(&cfg->keybinds[THOTH_MoveLines_UP]);
 			else if(strcmp(lineType, "MoveLines_DOWN") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveLines_DOWN]);
-			else if(strcmp(lineType, "MoveByWords_BACK") == 0)
+			else if(strcmp(lineType, "MoveByWords_BACKWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveByWords_BACK]);
 			else if(strcmp(lineType, "MoveByWords_FORWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_MoveByWords_FORWARD]);
 			else if(strcmp(lineType, "IndentLine_FORWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_IndentLine_FORWARD]);
-			else if(strcmp(lineType, "IndentLine_BACK") == 0)
+			else if(strcmp(lineType, "IndentLine_BACKWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_IndentLine_BACK]);
-			else if(strcmp(lineType, "ExpandSelectionWords_BACK") == 0)
+			else if(strcmp(lineType, "ExpandSelectionWords_BACKWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_ExpandSelectionWords_BACK]);
 			else if(strcmp(lineType, "ExpandSelectionWords_FORWARD") == 0)
 				ReadCommand(&cfg->keybinds[THOTH_ExpandSelectionWords_FORWARD]);
@@ -273,10 +259,25 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	}
 
 	int k;
-	for(k = 0; k < THOTH_NUM_COLORS-1; k++){
-		cfg->colors[k].r = defaultColors[k].r / 255.0f;
-		cfg->colors[k].g = defaultColors[k].g / 255.0f;
-		cfg->colors[k].b = defaultColors[k].b / 255.0f;
+	for(k = 0; k < THOTH_NUM_COLORS; k++){
+	#ifdef SDL_COMPILE
+		cfg->colors[k].r = (float)defaultColors[k].r/255.0f;
+		cfg->colors[k].g = (float)defaultColors[k].g/255.0f;
+		cfg->colors[k].b = (float)defaultColors[k].b/255.0f;
+
+	
+	#else
+	#ifdef WINDOWS_COMPILE
+		cfg->colors[k].r = (int)defaultColors[k].r << 16;
+		cfg->colors[k].g = (int)defaultColors[k].g << 8;
+		cfg->colors[k].b = defaultColors[k].b & 0xFF;
+	#else
+		cfg->colors[k].r = defaultColors[k].r*1000/255;
+		cfg->colors[k].g = defaultColors[k].g*1000/255;
+		cfg->colors[k].b = defaultColors[k].b*1000/255;
+
+	#endif
+	#endif
 	}
 
 }

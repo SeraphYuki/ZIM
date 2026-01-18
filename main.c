@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <SDL3/SDL.h>
+#include <GL/glew.h>
+#include <SDL3/SDL_opengl.h>
 #include "text_editor.h"
 #include "window.h"
 #include "memory.h"
@@ -160,12 +162,13 @@ void Event(Thoth_t *t){
 		t->key = (t->key&0xFF00) | (ev.text.text[0] & 0xFF);
 		t->state = THOTH_STATE_UPDATE;        
 
+
 #ifndef LIBRARY_COMPILE
 	} else if(ev.type == SDL_EVENT_WINDOW_RESIZED || ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED){
 		Thoth_Graphics_ViewportXY(&t->graphics, 0, 0);
 		Thoth_Graphics_Resize(&t->graphics, ev.window.data1, ev.window.data2);
 		Thoth_Graphics_Clear(&t->graphics);
-		Thoth_Editor_Draw(&t->te);        
+		Thoth_Editor_Draw(&t->te, &t->graphics);        
 		Thoth_Graphics_Render(&t->graphics);
 		Window_Swap();
 #endif
@@ -191,14 +194,14 @@ Thoth_t *Thoth_Create(int w, int h){
 	Thoth_Graphics_Init(&t->graphics, &t->cfg, w, h);
 
 
-	Thoth_Editor_Init(&t->te, &t->graphics, &t->cfg);
+	Thoth_Editor_Init(&t->te, &t->graphics,&t->cfg);
 	Thoth_Editor_LoadFile(&t->te, NULL);
 
 	SDL_StartTextInput(Window_GetWindow());
 
    Thoth_Graphics_Clear(&t->graphics);
-   Thoth_Editor_Draw(&t->te);        
-   Thoth_Graphics_Render(&t->graphics);
+	Thoth_Editor_Draw(&t->te);        
+	Thoth_Graphics_Render(&t->graphics);
 
 	return (void *)t;
 }
@@ -225,8 +228,8 @@ int Thoth_Event(Thoth_t *t, SDL_Event ev){
 	   Thoth_Editor_Draw(&t->te);        
 	   Thoth_Graphics_Render(&t->graphics);
 	   return 1;
-   }
-   return 0;
+	}
+	return 0;
 }
 void Thoth_Render(Thoth_t *t){
 	Thoth_Graphics_Clear(&t->graphics);
@@ -236,9 +239,9 @@ void Thoth_Render(Thoth_t *t){
 
 void Thoth_LoadFile(Thoth_t *t, char *path){
 	Thoth_Editor_LoadFile(&t->te, path);
-   Thoth_Graphics_Clear(&t->graphics);
-   Thoth_Editor_Draw(&t->te);        
-   Thoth_Graphics_Render(&t->graphics);
+	Thoth_Graphics_Clear(&t->graphics);
+	Thoth_Editor_Draw(&t->te);        
+	Thoth_Graphics_Render(&t->graphics);
 }
 
 void Thoth_Destroy(Thoth_t *t){
@@ -260,8 +263,7 @@ int main(int argc, char **argv){
 	Thoth_Config_Read(&t.cfg);
 	Thoth_Graphics_Init( &t.graphics, &t.cfg,WINDOW_INIT_WIDTH,WINDOW_INIT_HEIGHT);
 
-
-	Thoth_Editor_Init(&t.te, &t.graphics, &t.cfg);
+	Thoth_Editor_Init(&t.te,&t.graphics, &t.cfg);
 
 	if(argc > 1){
 		int k;
@@ -278,29 +280,32 @@ int main(int argc, char **argv){
 	// u32 lastSecond = SDL_GetTicks();
 
    Thoth_Graphics_Clear(&t.graphics);
-   Thoth_Editor_Draw(&t.te);        
-   Thoth_Graphics_Render(&t.graphics);
-   Window_Swap();
+	Thoth_Editor_Draw(&t.te, &t.graphics);        
+	Thoth_Graphics_Render(&t.graphics);
 
+	int currTime;
+	int frames;
+	int lastSecond;
 	while(t.state != THOTH_STATE_QUIT){
 
-	   // currTime = SDL_GetTicks();
+	    currTime = SDL_GetTicks();
 
-	   // int fps;
-	   // float frameTime;
-	   // if(currTime - lastSecond > 1000){
-	   //     fps = frames;
-	   //     frameTime = (currTime - lastSecond) / (float)frames;
-	   //     lastSecond = currTime;
-	   //     frames = 0;
-		   // printf("fps: %i | ms: %f\n", fps, frameTime);
-	   // }
+	    int fps;
+	    float frameTime;
+	    if(currTime - lastSecond > 1000){
+	        fps = frames;
+	        frameTime = (currTime - lastSecond) / (float)frames;
+	        lastSecond = currTime;
+	        frames = 0;
+		    printf("fps: %i | ms: %f\n", fps, frameTime);
+	    }
 
-	   // ++frames;
+	    ++frames;
 
 	   Event(&t);
 
 	   if(t.state == THOTH_STATE_QUIT){
+			
 			if(!Thoth_Editor_Destroy(&t.te))
 				t.state = THOTH_STATE_UPDATEDRAW;
 	   }
@@ -326,11 +331,11 @@ int main(int argc, char **argv){
 			}    
 		   t.state = THOTH_STATE_RUNNING;
 
-		   Thoth_Graphics_Clear(&t.graphics);
-		   Thoth_Editor_Draw(&t.te);        
-		   Thoth_Graphics_Render(&t.graphics);
-		   Window_Swap();
 	   }
+	   Thoth_Graphics_Clear(&t.graphics);
+	   Thoth_Editor_Draw(&t.te, &t.graphics);        
+	   Thoth_Graphics_Render(&t.graphics);
+	   Window_Swap();
 	}
 
 

@@ -89,7 +89,7 @@ static void Compile(Thoth_Graphics *graphics, Thoth_Shader *shader, const char *
 	shader->uniColorLoc = glGetUniformLocation(shader->program, "uniformColor");
 	shader->invViewportLoc = glGetUniformLocation(shader->program, "invViewport");
 	shader->ncursesColorsLoc = glGetUniformLocation(shader->program, "colors");
-	glUniform3fv(shader->ncursesColorsLoc, THOTH_NUM_COLORS-1, (float *)&graphics->cfg->colors[0].r);
+	glUniform3fv(shader->ncursesColorsLoc, THOTH_NUM_COLORS, (float *)&graphics->cfg->colors[0].r);
 	glUniform2f(shader->invViewportLoc,1.0f/graphics->viewport.w, 1.0f/graphics->viewport.h);
 }
 
@@ -275,6 +275,7 @@ static void CreateFrameBuffer(Thoth_Graphics *graphics){
 	glViewport(0, 0, graphics->viewport.w, graphics->viewport.h);
 
 	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG-1].r,graphics->cfg->colors[THOTH_COLOR_BG-1].g,graphics->cfg->colors[THOTH_COLOR_BG-1].b,1);
+	glClearColor(1,1,1,1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -293,7 +294,7 @@ void Thoth_Graphics_Init(Thoth_Graphics *graphics, Thoth_Config *cfg, int w, int
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_POLYGON_SMOOTH);
 		
-   
+	
 	Thoth_Text_Init();
 	
 	// textures
@@ -461,10 +462,8 @@ void Thoth_Graphics_Render(Thoth_Graphics *graphics){
 	glUniform2f(graphics->shaders[THOTH_QUAD_SHADER].invViewportLoc,1.0f, 1.0f);
 
 	glCullFace(GL_FRONT);
-
 	glBindTexture(GL_TEXTURE_2D, graphics->fbTexture_g);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
 	// // end
 }
 
@@ -473,6 +472,7 @@ void Thoth_Graphics_Clear(Thoth_Graphics *graphics){
 	glViewport(graphics->viewport.x, graphics->viewport.y, graphics->viewport.w, graphics->viewport.h);
 
 	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG-1].r,graphics->cfg->colors[THOTH_COLOR_BG-1].g,graphics->cfg->colors[THOTH_COLOR_BG-1].b,1);
+
 	glClear(GL_COLOR_BUFFER_BIT);
 	glCullFace(GL_BACK);
 }
@@ -557,10 +557,10 @@ u32 Thoth_Graphics_FontWidth(Thoth_Graphics *graphics){ return graphics->fontTTF
 u32 Thoth_Graphics_FontHeight(Thoth_Graphics *graphics){ return graphics->fontTTF.fontSize*1.3; }
 
 u32 Thoth_Graphics_TextCollumns(Thoth_Graphics *graphics){
-   return graphics->viewport.h / Thoth_Graphics_FontHeight(graphics); 
+	return graphics->viewport.h / Thoth_Graphics_FontHeight(graphics); 
 }
 u32 Thoth_Graphics_TextRows(Thoth_Graphics *graphics){
-   return graphics->viewport.w / Thoth_Graphics_FontWidth(graphics);
+	return graphics->viewport.w / Thoth_Graphics_FontWidth(graphics);
 }
 
 void Thoth_Graphics_SetFontSize(Thoth_Graphics *graphics, u8 fs){

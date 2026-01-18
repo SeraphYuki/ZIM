@@ -1,9 +1,20 @@
 #ifndef TEXT_EDITOR_DEF
  #define TEXT_EDITOR_DEF
 #include <sys/types.h>
+#ifdef WINDOWS_COMPILE
+#include <windows.h>
+#endif
 #include "types.h"
-#include "graphics.h"
 #include "config.h"
+
+#ifndef SDL_COMPILE
+
+#ifdef LINUX_COMPILE
+#include "x11.h"
+#endif
+#else
+#include "graphics.h"
+#endif
 #include "file_browser.h"
 
 #define THOTH_CTRL_KEY    (unsigned int)0x100
@@ -14,7 +25,6 @@
 #define THOTH_ARROW_LEFT  (unsigned int)0x2000
 #define THOTH_ARROW_RIGHT (unsigned int)0x4000
 #define THOTH_ENTER_KEY   (unsigned int)0x8000
-
 // #include "window.h"
 // #include "text.h"
 
@@ -34,24 +44,25 @@
 // // { "keys": ["shift+alt+ctrl+l"], "command": "move", "args": {"extend": true, "by": "word_ends", "forward": true} },
 
  enum {
-  THOTH_LOGMODE_NUM = 1,
-  THOTH_LOGMODE_TEXT,
-  THOTH_LOGMODE_TEXT_INSENSITIVE,
-  THOTH_LOGMODE_SAVE,
-  THOTH_LOGMODE_OPEN,
-  THOTH_LOGMODE_HELP,
-  THOTH_LOGMODE_SWITCH_FILE,
-  THOTH_LOGMODE_FILEBROWSER,
-  THOTH_LOGMODE_MODES_INPUTLESS,
-  THOTH_LOGMODE_ALERT,
-  THOTH_LOGMODE_CONSOLE,
+	THOTH_LOGMODE_NUM = 1,
+	THOTH_LOGMODE_TEXT,
+	THOTH_LOGMODE_TEXT_INSENSITIVE,
+	THOTH_LOGMODE_SAVE,
+	THOTH_LOGMODE_OPEN,
+	THOTH_LOGMODE_HELP,
+	THOTH_LOGMODE_SWITCH_FILE,
+	THOTH_LOGMODE_FILEBROWSER,
+	THOTH_LOGMODE_MODES_INPUTLESS,
+	THOTH_LOGMODE_ALERT,
+	THOTH_LOGMODE_CONSOLE,
+	THOTH_LOGMODE_IMAGE,
  };
 
  typedef struct {
 
   int startCursorPos;
-  int len;
-
+	int len;
+	int dir;
  } Thoth_EditorSelection;
 
 
@@ -61,102 +72,126 @@
 
  struct Thoth_EditorCmd {
 
-  unsigned int keyBinding[8];
-  char *keys;
-  int num;
-  unsigned char scroll;
-  
-  Thoth_EditorCur *savedCursors;
-  int nSavedCursors;
-  Thoth_EditorCur *hiddenCursors;
-  int nHiddenCursors;
-  void (*Execute)(Thoth_Editor *, Thoth_EditorCmd *c);
-  void (*Undo)(Thoth_Editor *, Thoth_EditorCmd *c);
+	unsigned int keyBinding[8];
+	char *keys;
+	int num;
+	unsigned char scroll;
+	
+	Thoth_EditorCur *savedCursors;
+	int nSavedCursors;
+	Thoth_EditorCur *hiddenCursors;
+	int nHiddenCursors;
+	void (*Execute)(Thoth_Editor *, Thoth_EditorCmd *c);
+	void (*Undo)(Thoth_Editor *, Thoth_EditorCmd *s);
  };
 
  struct Thoth_EditorCur {
 
 
-  Thoth_EditorSelection selection;
+	Thoth_EditorSelection selection;
 
   //no longer used, now clipboard is from system, lines seperated by \n
-  char *clipboard;
-  int sClipboard;
-  char *savedText;
-  int addedLen;
-  int pos;
+	int hiddenIndex;
+	char *clipboard;
+	int sClipboard;
+	char *savedText;
+	int addedLen;
+	int pos;
  };
 
 #define THOTH_MAX_AUTO_COMPLETE_STRLEN 35
 #define THOTH_MAX_AUTO_COMPLETE 20
 
 typedef struct {
-  int offset;
-  int len;
+	int offset;
+	int len;
 } Thoth_AutoCompleteOffset;
 
 typedef struct {
-  char                    *text;
-  int                     scroll;
-  int                     unsaved;
-  int                     cursorPos;
-  int                     historyPos;
-  Thoth_EditorCmd       **history;
-  int                     sHistory;
-
-
-  int                     textLen;
-  char                    name[MAX_FILENAME];
-  char                    path[MAX_PATH_LEN];
+	char                    *text;
+	int                     scroll;
+	int                     unsaved;
+	int                     cursorPos;
+	int                     historyPos;
+	Thoth_EditorCmd       **history;
+	int                     sHistory;
+#ifndef SDL_COMPILE
+#ifdef LINUX_COMPILE
+	Image 				  img;
+#endif
+#endif
+	int                     textLen;
+	char                    name[MAX_FILENAME];
+	char                    path[MAX_PATH_LEN];
 } Thoth_EditorFile;
 
  struct Thoth_Editor {
 
-  Thoth_Config            *cfg;
-  Thoth_Graphics         *graphics;
-  Thoth_EditorCmd       **commands;
-  Thoth_AutoCompleteOffset      autoComplete[THOTH_MAX_AUTO_COMPLETE];
-  Thoth_EditorCur        *cursors;
-  Thoth_EditorFile          **files;
-  Thoth_EditorFile          *file;
-  Thoth_FileBrowser       fileBrowser;
-  Thoth_EditorCmd         **lastCmd;  
+	Thoth_Config            *cfg;
+	Thoth_EditorCmd       **commands;
+	Thoth_AutoCompleteOffset      autoComplete[THOTH_MAX_AUTO_COMPLETE];
+	Thoth_EditorCur        *cursors;
+	Thoth_EditorFile          **files;
+	Thoth_EditorFile          *file;
+	Thoth_FileBrowser       fileBrowser;
+	Thoth_EditorCmd         **lastCmd;  
 
-  int                     nCommands;
-  int                     selectNextWordTerminator; // "select" not get it in the phrase selecting
+	int                     linesY;
+	int                     colsX;
+	int                     nCommands;
+	int                     selectNextWordTerminator; // "select" not get it in the phrase selecting
 
-  int                     autoCompleteSearchLen;
-  int                     autoCompleteLen;
-  int                     autoCompleteIndex;
+	int                     autoCompleteSearchLen;
+	int                     autoCompleteLen;
+	int                     autoCompleteIndex;
 
-  int                     logging;
-  int                     logIndex;
-  char                    *loggingText;
 
-  int                     nFiles;
+	int                     logging;
+	int                     logIndex;
+	char                    *loggingText;
 
-  int                     mouseSelection;
-  int                     nCursors;
-  int                     logX;
-  int                     logY;
+	int                     nFiles;
 
-  int                     quit;
+	int                     mouseSelection;
+	int                     nCursors;
+	int                     logX;
+	int                     logY;
 
-  int                     ttyPid;
-  int                     ttyMaster;
-  int                     ttySlave;
-  int                     _stdout;
-  int                     _stderr;
- };
+	int                     quit;
+
+	int                     ttyPid;
+	int                     ttyMaster;
+	int                     ttySlave;
+	int                     _stdout;
+	int                     _stderr;
+	char        			*clipboard; 
+#ifdef SDL_COMPILE
+	Thoth_Graphics 				*graphics;
+#endif
+};
 
 
 void Thoth_Editor_LoadFile(Thoth_Editor *t, char *path);
+#ifdef SDL_COMPILE
+void Thoth_Editor_Draw(Thoth_Editor *t, Thoth_Graphics *hdcMem);
+#elif
+
+#ifdef WINDOWS_COMPILE
+void Thoth_Editor_Draw(Thoth_Editor *t,HWND hwnd);
+#elif LINUX_COMPILE
 void Thoth_Editor_Draw(Thoth_Editor *t);
+#endif
+
+#endif
 void Thoth_Editor_Event(Thoth_Editor *t,unsigned int key);
 int Thoth_Editor_Destroy(Thoth_Editor *t);
-void Thoth_Editor_Init(Thoth_Editor *t, Thoth_Graphics *g, Thoth_Config *cfg);
 void Thoth_Editor_SetCursorPos(Thoth_Editor *t, int x, int y);
 int Thoth_Editor_SetCursorPosSelection(Thoth_Editor *t, int x, int y);
 int Thoth_Editor_Scroll(Thoth_Editor *t, int y);
 void Thoth_Editor_SetCursorPosDoubleClick(Thoth_Editor *t, int x, int y);
- #endif
+#endif
+#ifdef SDL_COMPILE
+void Thoth_Editor_Init(Thoth_Editor *t, Thoth_Graphics *graphics, Thoth_Config *cfg);
+#else
+void Thoth_Editor_Init(Thoth_Editor *t, Thoth_Config *cfg);
+#endif

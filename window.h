@@ -7,8 +7,8 @@
 #define WINDOW_TITLE "zim"
 #define WINDOW_INIT_WIDTH 			960
 #define WINDOW_INIT_HEIGHT 			540
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL.h>
 SDL_Window *Window_GetWindow();
 void Window_Swap();
 void Window_Close();
