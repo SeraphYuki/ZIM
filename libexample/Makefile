@@ -2,11 +2,10 @@
 # linux
 CC=gcc
 EXECUTABLE=thothtest
-CFLAGS =  -g -Wall -lm  $(shell sdl2-config --cflags) $(shell pkg-config --cflags freetype2)
-# CFLAGS =  -g -Wall -lm  -DLINUX_INSTALL -DLINUX_COMPILE $(shell sdl2-config --cflags) $(shell pkg-config --cflags freetype2)
+CFLAGS =  -g -Wall -lm  $(shell pkg-config --cflags sdl3) $(shell pkg-config --cflags freetype2)
 FREETYPELIBS = $(shell pkg-config --libs freetype2)
 GLEWLIBS = $(shell pkg-config --static --libs glew)
-SDLLIBS = $(shell pkg-config --libs sdl2)
+SDLLIBS = $(shell pkg-config --libs sdl3)
 # add -pg for gdb
 LDLIBS =-lm -lutil -static-libgcc -L. -lthoth $(GLEWLIBS) $(SDLLIBS) $(FREETYPELIBS) 
 # #

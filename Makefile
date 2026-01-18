@@ -1,35 +1,37 @@
 # wish i knew make, uncomment for library compile comment everything else
-#EXECUTABLE=libthoth.a
-#CC=gcc
-#EXECUTABLE=libthoth.a
-#CFLAGS = -g -Wall -lm -DLIBRARY_COMPILE -DLINUX_COMPILE  $(shell sdl2-config --cflags) $(shell pkg-config --cflags freetype2)
-#
-#SOURCES=main.c text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c
-#OBJECTS=$(SOURCES:.c=.o)
-#
-#
-#all: $(SOURCES) $(EXECUTABLE)
-#
-#$(EXECUTABLE): $(OBJECTS) 
-#	ar -rc $@ $(OBJECTS)
-#
-#.c.o:
-#	$(CC) -c $(CFLAGS) $< -o $@
-#
-#clean:
-#	rm *.o
+EXECUTABLE=libthoth.a
+CC=gcc
+EXECUTABLE=libthoth.a
+CFLAGS = -g -Wall -lm -DSDL_COMPILE -DLIBRARY_COMPILE -DLINUX_COMPILE\
+ $(shell pkg-config --cflags sdl3) $(shell pkg-config --cflags freetype2)
+
+SOURCES=main.c text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c
+OBJECTS=$(SOURCES:.c=.o)
+
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS) 
+	ar -rc $@ $(OBJECTS)
+
+.c.o:
+	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm *.o
+
 #
 # # linuxa
-CC=gcc
-EXECUTABLE=zim
-CFLAGS = -g -Wall -lm -DLINUX_COMPILE -DSDL_COMPILE  $(shell pkg-config --cflags sdl3) \
-$(shell pkg-config --cflags freetype2) -DLINUX_INSTALL
-
-FREETYPELIBS = $(shell pkg-config --libs freetype2)
-GLEWLIBS = $(shell pkg-config --libs glew)
-SDLLIBS = $(shell pkg-config --libs sdl3)
-LDLIBS = -lm -lutil  $(GLEWLIBS) $(SDLLIBS) $(FREETYPELIBS)
-
+#CC=gcc
+#EXECUTABLE=zim
+#CFLAGS = -g -Wall -lm -DLINUX_COMPILE -DSDL_COMPILE  $(shell pkg-config --cflags sdl3) \
+#$(shell pkg-config --cflags freetype2) -DLINUX_INSTALL
+#
+#FREETYPELIBS = $(shell pkg-config --libs freetype2)
+#GLEWLIBS = $(shell pkg-config --libs glew)
+#SDLLIBS = $(shell pkg-config --libs sdl3)
+#LDLIBS = -lm -lutil  $(GLEWLIBS) $(SDLLIBS) $(FREETYPELIBS)
+#
 
 # CC=mingw32-gcc
 # EXECUTABLE=zim.exe
@@ -53,17 +55,17 @@ LDLIBS = -lm -lutil  $(GLEWLIBS) $(SDLLIBS) $(FREETYPELIBS)
 ## LIBS = -Wl,-Bdynamic -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lglew32 -Wl,-Bstatic -lpng16 -lz -lm -Llib/freetype/lib/win_cb/ -lfreetype
 #
 
-SOURCES=main.c \
-text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c
-OBJECTS=$(SOURCES:.c=.o)
+#SOURCES=main.c \
+#text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c
+#OBJECTS=$(SOURCES:.c=.o)
+#
+#
+#all: $(SOURCES) $(EXECUTABLE)
+#
 
-
-all: $(SOURCES) $(EXECUTABLE)
-
-
-$(EXECUTABLE): $(OBJECTS) 
-	$(CC) $(OBJECTS) $(LDLIBS) -o $@
-
+#$(EXECUTABLE): $(OBJECTS) 
+#	$(CC) $(OBJECTS) $(LDLIBS) -o $@
+#
 # wihndows unused right now
 # all: createResourcesO $(SOURCES) $(EXECUTABLE)
 
@@ -72,9 +74,10 @@ $(EXECUTABLE): $(OBJECTS)
 
 # createResourcesO: icon.rc
 # 	windres icon.rc -o icon.o
+#
+#.c.o:
+#	$(CC) -c $(CFLAGS) $< -o $@
+#
+#clean:
+#	rm *.o
 
-.c.o:
-	$(CC) -c $(CFLAGS) $< -o $@
-
-clean:
-	rm *.o

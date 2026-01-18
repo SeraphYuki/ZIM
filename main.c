@@ -180,7 +180,7 @@ void Thoth_Resize(Thoth_t *t, int x, int y, int w, int h){
 	Thoth_Graphics_Resize(&t->graphics, w, h);
 	Thoth_Graphics_ViewportXY(&t->graphics, x, y);
 	Thoth_Graphics_Clear(&t->graphics);
-	Thoth_Editor_Draw(&t->te);        
+	Thoth_Editor_Draw(&t->te,&t->graphics);        
 	Thoth_Graphics_Render(&t->graphics);
 }
 
@@ -197,10 +197,10 @@ Thoth_t *Thoth_Create(int w, int h){
 	Thoth_Editor_Init(&t->te, &t->graphics,&t->cfg);
 	Thoth_Editor_LoadFile(&t->te, NULL);
 
-	SDL_StartTextInput(Window_GetWindow());
+
 
    Thoth_Graphics_Clear(&t->graphics);
-	Thoth_Editor_Draw(&t->te);        
+	Thoth_Editor_Draw(&t->te,&t->graphics);        
 	Thoth_Graphics_Render(&t->graphics);
 
 	return (void *)t;
@@ -225,7 +225,7 @@ int Thoth_Event(Thoth_t *t, SDL_Event ev){
 	   t->state = THOTH_STATE_RUNNING;
 
 	   Thoth_Graphics_Clear(&t->graphics);
-	   Thoth_Editor_Draw(&t->te);        
+	   Thoth_Editor_Draw(&t->te,&t->graphics);        
 	   Thoth_Graphics_Render(&t->graphics);
 	   return 1;
 	}
@@ -233,14 +233,14 @@ int Thoth_Event(Thoth_t *t, SDL_Event ev){
 }
 void Thoth_Render(Thoth_t *t){
 	Thoth_Graphics_Clear(&t->graphics);
-	Thoth_Editor_Draw(&t->te);        
+	Thoth_Editor_Draw(&t->te,&t->graphics);        
 	Thoth_Graphics_Render(&t->graphics);
 }
 
 void Thoth_LoadFile(Thoth_t *t, char *path){
 	Thoth_Editor_LoadFile(&t->te, path);
 	Thoth_Graphics_Clear(&t->graphics);
-	Thoth_Editor_Draw(&t->te);        
+	Thoth_Editor_Draw(&t->te,&t->graphics);        
 	Thoth_Graphics_Render(&t->graphics);
 }
 
