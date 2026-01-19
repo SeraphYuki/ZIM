@@ -574,7 +574,7 @@ void Thoth_Graphics_mvprintw(Thoth_Graphics *graphics, float x, float y, char *s
 	float fontSizeY = Thoth_Graphics_FontHeight(graphics);
 	u32 k;
 
-	// float graphics->fontSize = graphics->font_g.width / 16;
+	//graphics->fontSize = graphics->font_g.width / 16;
 	x *= fontSizeX;
 	y++;
 	y *= fontSizeY;

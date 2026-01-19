@@ -4,6 +4,8 @@
 #ifndef SDL_COMPILE
 #include "x11.h"
 #include <ncurses.h>
+#else
+#include <SDL3/SDL.h>
 #endif
 #include "file_browser.h"
 #include <stdio.h>
@@ -1491,7 +1493,11 @@ static void Paste(Thoth_Editor *t, Thoth_EditorCmd *c){
 
 	// RefreshEditorCommand(c);
 #ifdef SDL_COMPILE
-	SDL_SetClipboardText(t->clipboard);
+	if(t->clipboard) free(t->clipboard);
+	char *temp = SDL_GetClipboardText();
+	t->clipboard = malloc(strlen(temp)+1);
+	strcpy(t->clipboard, temp);
+	SDL_free(temp);
 #elif
 #ifdef LINUX_COMPILE
 	X11_Paste(&t->clipboard);
@@ -2156,10 +2162,7 @@ static void Copy(Thoth_Editor *t, Thoth_EditorCmd *c){
 		buffer[bufferLen] = 0;
 		t->clipboard=buffer;
 #ifdef SDL_COMPILE
-		char *temp = SDL_GetClipboardText();
-		free(buffer);
-		t->clipboard = malloc(strlen(temp)+1);
-		strcpy(t->clipboard, temp);
+		SDL_SetClipboardText(t->clipboard);
 #elif LINUX_COMPILE
 		free(buffer);
 		X11_Copy(&t->clipboard);
@@ -3818,7 +3821,7 @@ void Thoth_Editor_Draw(Thoth_Editor *t){
 	}
 
 	Thoth_attron(hdcMem,(THOTH_COLOR_NORMAL));
-	if(t->logging == THOTH_LOGMODE_CONSOLE){
+	if(t->logging == THOTH_LOGMODE_CONSOLE && t->loggingText){
 		int logLen = strlen(t->loggingText);
 #ifndef SDL_COMPILE
 #ifdef LINUX_COMPILE
@@ -3836,8 +3839,6 @@ void Thoth_Editor_Draw(Thoth_Editor *t){
 		// fseek(fp, 0, SEEK_END);
 		// logLen = ftell(fp);
 		// rewind(fp);
-
-
 		// t->loggingText = malloc(logLen+1);
 		// fread(t->loggingText, 1, logLen, fp);
 		// t->loggingText[logLen] = 0;
@@ -3848,6 +3849,7 @@ void Thoth_Editor_Draw(Thoth_Editor *t){
 	// wrefresh(stdscr);
 	// end logs
 	char *text = t->file->text;
+	if(!text) return;
 	
 	t->file->textLen = strlen(text);
 
@@ -4536,8 +4538,3 @@ int Thoth_Editor_Destroy(Thoth_Editor *t){
 	Thoth_FileBrowser_Free(&t->fileBrowser);
 	return 1;
 }
-
-
-
-
-

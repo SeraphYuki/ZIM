@@ -8,10 +8,9 @@
 
 int main(int argc, char **argv){
 	 Window_Open();
-
 	
-    Thoth_t *thoth = Thoth_Create(WINDOW_INIT_WIDTH, WINDOW_INIT_HEIGHT );
-	 Thoth_Resize(thoth, 50, 50, WINDOW_INIT_WIDTH, WINDOW_INIT_HEIGHT);
+	 Thoth_t *thoth = Thoth_Create(WINDOW_INIT_WIDTH, WINDOW_INIT_HEIGHT );
+	 Thoth_Resize(thoth, 0, 0, WINDOW_INIT_WIDTH, WINDOW_INIT_HEIGHT);
 	 Thoth_LoadFile(thoth, "main.c");
 
     int quit = 0;
@@ -26,7 +25,7 @@ int main(int argc, char **argv){
 	             int w = ev.window.data1;
 	             int h = ev.window.data2;
 
-                Thoth_Resize(thoth, w, 0,w/2, h);
+                Thoth_Resize(thoth, 0, 0, w, h);
 	         }
 	     }
 	     if(quit) break;
