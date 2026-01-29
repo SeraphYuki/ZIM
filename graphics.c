@@ -274,7 +274,7 @@ static void CreateFrameBuffer(Thoth_Graphics *graphics){
 
 	glViewport(0, 0, graphics->viewport.w, graphics->viewport.h);
 
-	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG-1].r,graphics->cfg->colors[THOTH_COLOR_BG-1].g,graphics->cfg->colors[THOTH_COLOR_BG-1].b,1);
+	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG].r,graphics->cfg->colors[THOTH_COLOR_BG].g,graphics->cfg->colors[THOTH_COLOR_BG].b,1);
 	glClearColor(1,1,1,1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -471,7 +471,7 @@ void Thoth_Graphics_Clear(Thoth_Graphics *graphics){
 	glBindFramebuffer(GL_FRAMEBUFFER, graphics->fb_g);
 	glViewport(graphics->viewport.x, graphics->viewport.y, graphics->viewport.w, graphics->viewport.h);
 
-	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG-1].r,graphics->cfg->colors[THOTH_COLOR_BG-1].g,graphics->cfg->colors[THOTH_COLOR_BG-1].b,1);
+	glClearColor(graphics->cfg->colors[THOTH_COLOR_BG].r,graphics->cfg->colors[THOTH_COLOR_BG].g,graphics->cfg->colors[THOTH_COLOR_BG].b,1);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glCullFace(GL_BACK);
@@ -694,6 +694,6 @@ void Thoth_Graphics_attroff(Thoth_Graphics *graphics, u32 attr){
 }
 
 void Thoth_Graphics_init_pair(Thoth_Graphics *graphics, u8 pair, u8 bg, u8 fg){
-	graphics->cfg->colorPairs[pair][0] = fg-1;
-	graphics->cfg->colorPairs[pair][1] = bg-1;
+	graphics->cfg->colorPairs[pair][0] = fg;
+	graphics->cfg->colorPairs[pair][1] = bg;
 }

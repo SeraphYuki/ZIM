@@ -56,7 +56,7 @@ LDLIBS = -lm -lutil  $(GLEWLIBS) $(SDLLIBS) $(FREETYPELIBS)
 #
 
 SOURCES=main.c \
-text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c
+text_editor.c window.c graphics.c log.c freetype.c file_browser.c config.c json.c
 
 OBJECTS=$(SOURCES:.c=.o)
 
