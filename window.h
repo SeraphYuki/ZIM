@@ -11,6 +11,7 @@ SDL_Window *Window_GetWindow();
 void Window_Close();
 int Window_GetTicks();
 int Window_Open();
+void Window_Swap();
 void Window_PollEvent(void (*callback)(SDL_Event ev));
 #endif
 

@@ -182,6 +182,7 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	
 	int k;
 	for(k = 0; k < THOTH_NUM_COLORS; k++){
+#ifndef SDL_COMPILE
 	#ifdef WINDOWS_COMPILE
 		cfg->colors[k].r = (int)defaultColors[k].r << 16;
 		cfg->colors[k].g = (int)defaultColors[k].g << 8;
@@ -191,6 +192,11 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 		cfg->colors[k].g = defaultColors[k].g*1000/255;
 		cfg->colors[k].b = defaultColors[k].b*1000/255;
 	#endif
+#else
+		cfg->colors[k].r = (defaultColors[k].r)/255.0f;
+		cfg->colors[k].g = ((defaultColors[k].g)&0xFF)/255.0f;
+		cfg->colors[k].b = (defaultColors[k].b)/255.0f;
+#endif
 	}
 
 	#ifdef LINUX_COMPILE
@@ -271,6 +277,7 @@ void Thoth_Config_Read(Thoth_Config *cfg){
 	cfg->tabs = DEFAULT_TAB_WIDTH;
 
 	FILE *fp = fopen(THOTH_CONFIG_FILE,"rb");
+	if(!fp) return;
 	void *stack = malloc(2048<<1);
 	void *stackEnd = stack + (2048<<1);
 	JSON_Value *top;
