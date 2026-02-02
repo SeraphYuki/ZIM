@@ -15,7 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+#ifdef __OpenBSD__
+#include <util.h>
+#else
 #include <pty.h>
+#endif
 #include <sys/wait.h>
 #endif
 #ifdef WINDOWS_COMPILE

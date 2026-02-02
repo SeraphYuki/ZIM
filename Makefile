@@ -21,8 +21,10 @@
 #	rm *.o
 #
 #
-# # linuxa
-CC=gcc
+# # linux / BSD
+CC=clang
+#CC=cc
+#CC=gcc
 EXECUTABLE=zim
 CFLAGS = -g -Wall -lm -DLINUX_COMPILE -DSDL_COMPILE  $(shell pkg-config --cflags sdl3) \
 $(shell pkg-config --cflags freetype2) -DLINUX_INSTALL
