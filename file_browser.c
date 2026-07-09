@@ -63,9 +63,7 @@ void Thoth_FileBrowser_ChangeDirectory(Thoth_FileBrowser *fb){
 
 		struct stat s;
 		char temp[MAX_PATH_LEN];
-		strcpy(temp,fb->directory);
-		strcpy(&temp[strlen(temp)], dp->d_name);
-		
+		snprintf(temp, MAX_PATH_LEN, "%s%s", fb->directory, dp->d_name);
 		stat(temp, &s);
 
 		if((s.st_mode & S_IFMT) == S_IFDIR){
